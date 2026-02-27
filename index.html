@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CivicAlert – Report Without Fear</title>
+
+<!-- Leaflet.js Real Map -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+
+<style>
+:root {
+  --bg:          #f2f5f2;
+  --white:       #ffffff;
+  --green:       #1a5c38;
+  --green-mid:   #237a4b;
+  --green-light: #2ea865;
+  --green-pale:  #e6f4ec;
+  --green-glow:  rgba(26,92,56,0.12);
+  --orange:      #e05c1a;
+  --orange-pale: #fff0e6;
+  --red:         #cc2929;
+  --blue:        #1a6fa8;
+  --yellow:      #d4920a;
+  --text:        #181c18;
+  --muted:       #667566;
+  --border:      #d6e8d6;
+  --card-shadow: 0 2px 20px rgba(26,92,56,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  --nav-h:       62px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Instrument Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── NAV ─────────────────────────────────────────────────────────────────── */
+nav {
+  background: var(--green);
+  height: var(--nav-h);
+  padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 900;
+  box-shadow: 0 2px 24px rgba(0,0,0,0.18);
+}
+.brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.brand-icon {
+  width:38px; height:38px; border-radius:11px;
+  background: rgba(255,255,255,0.13);
+  border: 1px solid rgba(255,255,255,0.18);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.25rem;
+}
+.brand-name {
+  font-family: 'Syne', sans-serif;
+  font-size:1.25rem; font-weight:800;
+  color:white; letter-spacing:-0.5px;
+  line-height:1;
+}
+.brand-name em { font-style:normal; color:#79e8a3; }
+.brand-tag { font-size:0.68rem; color:rgba(255,255,255,0.52); margin-top:2px; }
+
+.nav-links { display:flex; gap:2px; }
+.nav-link {
+  background:none; border:none; cursor:pointer;
+  font-family:'Instrument Sans',sans-serif; font-size:0.83rem; font-weight:500;
+  color:rgba(255,255,255,0.68); padding:8px 14px; border-radius:8px;
+  transition:all 0.18s;
+}
+.nav-link:hover { background:rgba(255,255,255,0.12); color:white; }
+.nav-link.active { background:rgba(255,255,255,0.15); color:white; }
+
+/* ─── HERO ────────────────────────────────────────────────────────────────── */
+.hero {
+  background: linear-gradient(150deg, #0e3d22 0%, #1a5c38 45%, #1e6e44 100%);
+  padding: 72px 24px 88px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero-grid-bg {
+  position:absolute; inset:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.hero-glow {
+  position:absolute; top:-80px; left:50%; transform:translateX(-50%);
+  width:600px; height:400px;
+  background: radial-gradient(ellipse, rgba(121,232,163,0.12) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hero-inner { position:relative; z-index:1; max-width:640px; margin:0 auto; }
+
+.hero-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(121,232,163,0.12); border:1px solid rgba(121,232,163,0.28);
+  border-radius:99px; padding:5px 14px;
+  font-size:0.72rem; font-weight:600; letter-spacing:1.2px;
+  text-transform:uppercase; color:#79e8a3;
+  margin-bottom:22px;
+  animation: rise 0.7s ease both;
+}
+.hero h1 {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(2.2rem,5vw,3.4rem); font-weight:800;
+  color:white; line-height:1.1; letter-spacing:-1px;
+  margin-bottom:18px;
+  animation: rise 0.7s 0.08s ease both;
+}
+.hero h1 span { color:#79e8a3; display:block; font-style:italic; }
+.hero-sub {
+  font-size:1rem; line-height:1.65; color:rgba(255,255,255,0.65);
+  max-width:480px; margin:0 auto 36px;
+  animation: rise 0.7s 0.16s ease both;
+}
+.hero-btns {
+  display:flex; gap:12px; justify-content:center; flex-wrap:wrap;
+  animation: rise 0.7s 0.24s ease both;
+}
+.btn-hero-primary {
+  background:#79e8a3; color:var(--green); border:none;
+  font-family:'Instrument Sans',sans-serif; font-size:0.92rem; font-weight:600;
+  padding:13px 26px; border-radius:11px; cursor:pointer;
+  transition:all 0.2s;
+  box-shadow:0 4px 20px rgba(121,232,163,0.35);
+}
+.btn-hero-primary:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(121,232,163,0.45); }
+.btn-hero-outline {
+  background:transparent; color:white;
+  border:1px solid rgba(255,255,255,0.28);
+  font-family:'Instrument Sans',sans-serif; font-size:0.92rem; font-weight:500;
+  padding:13px 26px; border-radius:11px; cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-hero-outline:hover { background:rgba(255,255,255,0.08); }
+
+.hero-stats {
+  display:flex; gap:40px; justify-content:center; margin-top:52px;
+  animation: rise 0.7s 0.32s ease both;
+}
+.hstat-val {
+  font-family:'Syne',sans-serif; font-size:1.9rem; font-weight:800; color:#79e8a3;
+}
+.hstat-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.45); margin-top:2px; }
+
+@keyframes rise {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ─── MAIN LAYOUT ─────────────────────────────────────────────────────────── */
+.main { max-width:1200px; margin:0 auto; padding:52px 24px 64px; }
+
+.section-header { margin-bottom:28px; }
+.section-title {
+  font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800;
+  letter-spacing:-0.5px; color:var(--text);
+}
+.section-sub { font-size:0.85rem; color:var(--muted); margin-top:4px; }
+
+/* ─── ISSUE TYPE CARDS ────────────────────────────────────────────────────── */
+.issue-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px,1fr));
+  gap:10px; margin-bottom:40px;
+}
+.issue-card {
+  background:var(--white); border:2px solid var(--border);
+  border-radius:14px; padding:16px 10px; text-align:center;
+  cursor:pointer; transition:all 0.18s; user-select:none;
+}
+.issue-card:hover { border-color:var(--green); transform:translateY(-2px); box-shadow:var(--card-shadow); }
+.issue-card.sel { border-color:var(--green); background:var(--green-pale); box-shadow:0 0 0 3px rgba(26,92,56,0.08); }
+.ic-emoji { font-size:1.7rem; margin-bottom:8px; }
+.ic-name { font-size:0.76rem; font-weight:600; color:var(--text); }
+.ic-hint { font-size:0.64rem; color:var(--muted); margin-top:2px; }
+
+/* ─── TWO-COLUMN GRID ─────────────────────────────────────────────────────── */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+@media(max-width:800px) { .two-col { grid-template-columns:1fr; } }
+
+/* ─── CARD ────────────────────────────────────────────────────────────────── */
+.card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:22px; padding:28px;
+  box-shadow:var(--card-shadow);
+}
+.card-title {
+  font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:700;
+  display:flex; align-items:center; gap:9px; margin-bottom:22px;
+}
+.card-title-dot { width:9px; height:9px; border-radius:50%; background:var(--green); flex-shrink:0; }
+
+/* ─── FORM ELEMENTS ───────────────────────────────────────────────────────── */
+.form-group { margin-bottom:16px; }
+.form-label {
+  display:block; font-size:0.73rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:0.9px;
+  color:var(--muted); margin-bottom:7px;
+}
+.form-input, .form-textarea, .form-select {
+  width:100%; background:var(--bg);
+  border:1.5px solid var(--border);
+  color:var(--text); font-family:'Instrument Sans',sans-serif;
+  font-size:0.9rem; padding:11px 14px;
+  border-radius:11px; outline:none; transition:border-color 0.18s;
+}
+.form-input:focus, .form-textarea:focus, .form-select:focus { border-color:var(--green); background:white; }
+.form-textarea { resize:vertical; min-height:96px; line-height:1.55; }
+.form-select option { background:white; }
+
+.loc-row { display:flex; gap:8px; }
+.btn-gps {
+  flex-shrink:0; padding:11px 13px;
+  background:var(--green-pale); border:1.5px solid var(--border);
+  border-radius:11px; cursor:pointer; font-size:0.82rem;
+  font-family:'Instrument Sans',sans-serif; font-weight:600; color:var(--green);
+  transition:all 0.18s; white-space:nowrap;
+}
+.btn-gps:hover { border-color:var(--green); background:#d4eddf; }
+.btn-gps:disabled { opacity:0.6; cursor:not-allowed; }
+
+.loc-feedback {
+  margin-top:6px; font-size:0.74rem; color:var(--muted);
+  min-height:18px; transition:color 0.2s;
+}
+.loc-feedback.ok  { color:var(--green); }
+.loc-feedback.err { color:var(--red); }
+
+.sev-row { display:flex; gap:8px; }
+.sev-btn {
+  flex:1; padding:10px 6px; border:1.5px solid var(--border);
+  background:var(--bg); border-radius:10px; cursor:pointer;
+  font-family:'Instrument Sans',sans-serif; font-size:0.76rem; font-weight:600;
+  transition:all 0.18s; text-align:center;
+}
+.sev-btn:hover { border-color:var(--green); }
+.sev-btn.low.active  { border-color:var(--yellow);  background:#fff8e0; color:#9a6800; }
+.sev-btn.med.active  { border-color:var(--orange);  background:var(--orange-pale); color:var(--orange); }
+.sev-btn.high.active { border-color:var(--red);     background:#ffeaea; color:var(--red); }
+
+.anon-box {
+  background:var(--green-pale); border:1px solid #b8ddc8;
+  border-radius:10px; padding:11px 14px;
+  display:flex; align-items:flex-start; gap:9px;
+  font-size:0.78rem; color:var(--green); line-height:1.5;
+  margin-bottom:16px;
+}
+
+.btn-submit {
+  width:100%;
+  background:linear-gradient(135deg, var(--green), var(--green-mid));
+  color:white; border:none;
+  font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:700;
+  padding:15px; border-radius:13px; cursor:pointer;
+  transition:all 0.2s; letter-spacing:0.2px;
+  box-shadow:0 4px 18px rgba(26,92,56,0.28);
+}
+.btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 26px rgba(26,92,56,0.38); }
+.btn-submit:disabled { opacity:0.55; cursor:not-allowed; transform:none; }
+
+/* ─── MAP ─────────────────────────────────────────────────────────────────── */
+.map-wrap {
+  position:relative; border-radius:18px; overflow:hidden;
+  border:2px solid var(--border);
+  box-shadow:var(--card-shadow);
+}
+#leaflet-map {
+  width:100%; height:380px;
+  background:#e8f0e8;
+}
+/* Override leaflet attribution to be less intrusive */
+.leaflet-control-attribution { font-size:9px !important; }
+
+.map-badge {
+  position:absolute; top:10px; left:10px; z-index:500;
+  background:rgba(255,255,255,0.94);
+  border:1px solid var(--border); border-radius:8px;
+  padding:5px 11px; font-size:0.72rem; font-weight:700; color:var(--green);
+  pointer-events:none; backdrop-filter:blur(4px);
+}
+.map-status {
+  position:absolute; top:10px; right:10px; z-index:500;
+  background:rgba(255,255,255,0.94);
+  border:1px solid var(--border); border-radius:8px;
+  padding:5px 11px; font-size:0.7rem; font-weight:600; color:var(--muted);
+  backdrop-filter:blur(4px); display:none;
+}
+.map-status.show { display:block; }
+
+.map-legend {
+  display:flex; flex-wrap:wrap; gap:10px; margin-top:11px; padding:0 2px;
+}
+.leg { display:flex; align-items:center; gap:5px; font-size:0.73rem; color:var(--muted); }
+.leg-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+
+/* ─── REPORTS SECTION ─────────────────────────────────────────────────────── */
+.reports-section { margin-top:52px; }
+.filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.filter-btn {
+  padding:6px 15px; border-radius:99px;
+  border:1.5px solid var(--border); background:white;
+  color:var(--muted); font-family:'Instrument Sans',sans-serif;
+  font-size:0.76rem; font-weight:600; cursor:pointer; transition:all 0.18s;
+}
+.filter-btn:hover,.filter-btn.active { border-color:var(--green); color:var(--green); background:var(--green-pale); }
+
+.reports-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:15px; }
+.rcard {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:17px; padding:18px; position:relative; overflow:hidden;
+  transition:all 0.18s; animation:rise 0.35s ease both;
+}
+.rcard:hover { transform:translateY(-3px); box-shadow:var(--card-shadow); }
+.rcard::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:4px 0 0 4px; }
+.rcard.smoking::before  { background:#555; }
+.rcard.plastic::before  { background:var(--orange); }
+.rcard.water::before    { background:var(--blue); }
+.rcard.noise::before    { background:var(--yellow); }
+.rcard.transport::before{ background:var(--red); }
+.rcard.air::before      { background:#888; }
+.rcard.other::before    { background:var(--green); }
+
+.rcard-head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+.rtype-badge {
+  display:flex; align-items:center; gap:5px;
+  font-size:0.72rem; font-weight:700; padding:3px 11px; border-radius:99px;
+}
+.rsev {
+  font-size:0.68rem; font-weight:700; padding:3px 9px; border-radius:99px;
+}
+.rsev-low  { background:#fff8e0; color:#9a6800; }
+.rsev-med  { background:var(--orange-pale); color:var(--orange); }
+.rsev-high { background:#ffeaea; color:var(--red); }
+
+.rwarrior {
+  display:flex; align-items:center; gap:10px;
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:10px; padding:9px 12px; margin-bottom:12px;
+}
+.ravatar {
+  width:38px; height:38px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.75rem; font-weight:800; color:white; flex-shrink:0;
+}
+.rwarr-name { font-size:0.85rem; font-weight:700; }
+.rwarr-meta { font-size:0.7rem; color:var(--muted); margin-top:2px; }
+
+.rdesc { font-size:0.83rem; line-height:1.55; margin-bottom:12px; }
+.rfoot { display:flex; align-items:center; justify-content:space-between; }
+.rloc  { font-size:0.72rem; color:var(--muted); }
+.rauth { font-size:0.68rem; color:var(--muted); margin-top:2px; }
+.vote-btn {
+  background:var(--green-pale); border:1px solid var(--border);
+  border-radius:8px; padding:4px 10px;
+  font-size:0.73rem; cursor:pointer; transition:all 0.18s;
+  font-family:'Instrument Sans',sans-serif; font-weight:600;
+}
+.vote-btn:hover { background:var(--green); color:white; border-color:var(--green); }
+.vote-btn.voted { background:var(--green); color:white; border-color:var(--green); }
+
+.empty-msg {
+  grid-column:1/-1; text-align:center; padding:48px;
+  color:var(--muted); font-size:0.9rem;
+}
+.empty-msg span { display:block; font-size:2.5rem; margin-bottom:10px; }
+
+/* ─── HOW IT WORKS ────────────────────────────────────────────────────────── */
+.how-section {
+  background:var(--green); padding:64px 24px; margin-top:64px; text-align:center;
+}
+.how-title { font-family:'Syne',sans-serif; font-size:1.7rem; font-weight:800; color:white; margin-bottom:6px; }
+.how-sub { font-size:0.85rem; color:rgba(255,255,255,0.55); margin-bottom:36px; }
+.steps { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; }
+.step {
+  background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1);
+  border-radius:18px; padding:26px 22px; width:210px; text-align:center;
+  transition:all 0.2s;
+}
+.step:hover { background:rgba(255,255,255,0.12); transform:translateY(-4px); }
+.step-num {
+  width:38px; height:38px; border-radius:50%;
+  background:rgba(121,232,163,0.15); border:1px solid #79e8a3;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Syne',sans-serif; font-size:1.1rem; color:#79e8a3;
+  margin:0 auto 12px;
+}
+.step-icon { font-size:1.5rem; margin-bottom:9px; }
+.step-t { font-weight:700; color:white; font-size:0.92rem; margin-bottom:5px; }
+.step-d { font-size:0.75rem; color:rgba(255,255,255,0.5); line-height:1.55; }
+
+/* ─── FOOTER ──────────────────────────────────────────────────────────────── */
+footer {
+  background:#0a1a0e; color:rgba(255,255,255,0.38);
+  text-align:center; padding:22px; font-size:0.75rem;
+}
+footer b { color:#79e8a3; font-weight:600; }
+
+/* ─── SUCCESS MODAL ───────────────────────────────────────────────────────── */
+.modal-bg {
+  position:fixed; inset:0; background:rgba(0,0,0,0.52);
+  backdrop-filter:blur(6px); z-index:2000;
+  display:none; align-items:center; justify-content:center;
+}
+.modal-bg.open { display:flex; animation:rise 0.25s ease; }
+.modal {
+  background:white; border-radius:22px; padding:38px 32px;
+  max-width:390px; width:92%; text-align:center;
+  box-shadow:0 24px 80px rgba(0,0,0,0.22);
+  animation:rise 0.3s ease;
+}
+.modal-icon { font-size:3.2rem; margin-bottom:14px; }
+.modal-title { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; margin-bottom:8px; }
+.modal-warrior { font-size:1.05rem; font-weight:700; color:var(--green); margin-bottom:6px; }
+.modal-txt { font-size:0.83rem; color:var(--muted); line-height:1.6; margin-bottom:20px; }
+.modal-id {
+  background:var(--green-pale); border:1px dashed var(--green);
+  border-radius:9px; padding:11px; font-family:monospace;
+  font-size:1rem; font-weight:700; color:var(--green);
+  letter-spacing:2px; margin-bottom:8px;
+}
+.modal-id-hint { font-size:0.72rem; color:var(--muted); margin-bottom:20px; }
+.btn-modal-close {
+  background:var(--green); color:white; border:none;
+  font-family:'Syne',sans-serif; font-size:0.88rem; font-weight:700;
+  padding:13px 28px; border-radius:11px; cursor:pointer; transition:all 0.2s;
+}
+.btn-modal-close:hover { background:var(--green-mid); }
+
+/* ─── TOAST ───────────────────────────────────────────────────────────────── */
+.toast {
+  position:fixed; bottom:22px; right:22px; z-index:3000;
+  background:var(--green); color:white; border-radius:12px;
+  padding:13px 18px; font-size:0.83rem; font-weight:600;
+  box-shadow:0 8px 32px rgba(26,92,56,0.38);
+  animation:rise 0.25s ease;
+  max-width:320px; line-height:1.4;
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────────────────────────────── */
+@media(max-width:600px) {
+  nav { padding:0 16px; }
+  .nav-links { display:none; }
+  .hero { padding:44px 16px 60px; }
+  .hero-stats { gap:22px; }
+  .main { padding:36px 16px 48px; }
+  .how-section { padding:48px 16px; }
+}
+
+/* Leaflet custom marker styles */
+.ca-pin {
+  display:flex; align-items:center; justify-content:center;
+  border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);
+  border:2px solid white;
+  box-shadow:0 3px 10px rgba(0,0,0,0.22);
+}
+.ca-pin span {
+  transform:rotate(45deg);
+  font-size:0.65rem; font-weight:800; color:white;
+  font-family:'Instrument Sans',sans-serif;
+}
+.ca-pin-you {
+  width:20px; height:20px;
+  background:#1a5c38;
+  border-radius:50%;
+  border:3px solid white;
+  box-shadow:0 2px 12px rgba(26,92,56,0.5);
+  position:relative;
+}
+.ca-pin-you::after {
+  content:'';
+  position:absolute; inset:-6px;
+  border-radius:50%;
+  border:2px solid rgba(26,92,56,0.3);
+  animation:pulse-ring 2s ease infinite;
+}
+@keyframes pulse-ring {
+  0%   { transform:scale(0.8); opacity:0.8; }
+  100% { transform:scale(1.6); opacity:0; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="brand" href="#" onclick="scrollTo('report-section')">
+    <div class="brand-icon">🌿</div>
+    <div>
+      <div class="brand-name">Civic<em>Alert</em></div>
+      <div class="brand-tag">Report Without Fear</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="scrollTo('report-section')">Report Issue</button>
+    <button class="nav-link" onclick="scrollTo('map-section')">Live Map</button>
+    <button class="nav-link" onclick="scrollTo('reports-section')">All Reports</button>
+    <button class="nav-link" onclick="scrollTo('how-section')">How It Works</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-pill">🌍 100% Anonymous · No Sign-Up Required</div>
+    <h1>Speak Up Without<span>Speaking Out</span></h1>
+    <p class="hero-sub">Report pollution, misbehavior, and public issues directly to authorities — safely and anonymously. No fights, no fear, just action.</p>
+    <div class="hero-btns">
+      <button class="btn-hero-primary" onclick="scrollTo('report-section')">📝 Report an Issue</button>
+      <button class="btn-hero-outline" onclick="scrollTo('map-section')">🗺 View Live Map</button>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat">
+        <div class="hstat-val" id="heroTotal">0</div>
+        <div class="hstat-label">Reports Today</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-val" id="heroResolved">0</div>
+        <div class="hstat-label">Resolved</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-val">100%</div>
+        <div class="hstat-label">Anonymous</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ISSUE TYPE SELECTOR -->
+  <div id="report-section" class="section-header">
+    <div class="section-title">What are you reporting?</div>
+    <div class="section-sub">Choose the type — tap to select</div>
+  </div>
+  <div class="issue-grid" id="issueGrid">
+    <div class="issue-card sel" onclick="pickIssue(this,'smoking')">
+      <div class="ic-emoji">🚬</div><div class="ic-name">Smoking</div><div class="ic-hint">Public place</div>
+    </div>
+    <div class="issue-card" onclick="pickIssue(this,'plastic')">
+      <div class="ic-emoji">🗑️</div><div class="ic-name">Garbage</div><div class="ic-hint">Plastic / dumping</div>
+    </div>
+    <div class="issue-card" onclick="pickIssue(this,'water')">
+      <div class="ic-emoji">💧</div><div class="ic-name">Water Pollution</div><div class="ic-hint">River / drain</div>
+    </div>
+    <div class="issue-card" onclick="pickIssue(this,'noise')">
+      <div class="ic-emoji">🔊</div><div class="ic-name">Noise</div><div class="ic-hint">Loud disturbance</div>
+    </div>
+    <div class="issue-card" onclick="pickIssue(this,'transport')">
+      <div class="ic-emoji">🚌</div><div class="ic-name">Misbehavior</div><div class="ic-hint">Bus / transport</div>
+    </div>
+    <div class="issue-card" onclick="pickIssue(this,'air')">
+      <div class="ic-emoji">🏭</div><div class="ic-name">Air Pollution</div><div class="ic-hint">Factory / smoke</div>
+    </div>
+    <div class="issue-card" onclick="pickIssue(this,'other')">
+      <div class="ic-emoji">⚠️</div><div class="ic-name">Other</div><div class="ic-hint">Any civic issue</div>
+    </div>
+  </div>
+
+  <!-- FORM + MAP -->
+  <div class="two-col">
+    <!-- FORM -->
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Report Details</div>
+
+      <div class="anon-box">
+        <span>🔒</span>
+        <span><strong>No identity needed!</strong> You'll appear as your <em>"[City] Warrior"</em> name — bold, anonymous, safe. 🛡️</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">📍 Location</label>
+        <div class="loc-row">
+          <input class="form-input" id="locInput" placeholder="Enter area, street, landmark…" style="flex:1"/>
+          <button class="btn-gps" id="gpsBtn" onclick="getGPS()">📡 Detect</button>
+        </div>
+        <div class="loc-feedback" id="locFeedback"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">📝 Describe the Issue</label>
+        <textarea class="form-textarea" id="descInput" placeholder="Be specific — e.g. 'Person smoking near school gate at 3pm', 'Garbage dumped near river bridge'…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">🚨 Severity</label>
+        <div class="sev-row">
+          <button class="sev-btn low active" id="sev-low"  onclick="setSev('low')">🟡 Low</button>
+          <button class="sev-btn med"        id="sev-med"  onclick="setSev('med')">🟠 Medium</button>
+          <button class="sev-btn high"       id="sev-high" onclick="setSev('high')">🔴 High</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">🏛 Send Report To</label>
+        <select class="form-select" id="authSelect">
+          <option value="municipal">Municipal Corporation</option>
+          <option value="police">Local Police Station</option>
+          <option value="transport">Transport Authority</option>
+          <option value="pollution">Pollution Control Board</option>
+          <option value="all">All Authorities</option>
+        </select>
+      </div>
+
+      <button class="btn-submit" id="submitBtn" onclick="submitReport()">🚨 Submit Anonymous Report</button>
+    </div>
+
+    <!-- MAP -->
+    <div id="map-section">
+      <div class="card-title" style="margin-bottom:14px;"><div class="card-title-dot" style="background:var(--blue)"></div>Live Issue Map</div>
+      <div class="map-wrap">
+        <div id="leaflet-map"></div>
+        <div class="map-badge">🗺️ CivicAlert Live Map</div>
+        <div class="map-status" id="mapStatus"></div>
+      </div>
+      <div class="map-legend">
+        <div class="leg"><div class="leg-dot" style="background:#1a5c38;"></div>📍 You</div>
+        <div class="leg"><div class="leg-dot" style="background:#555;"></div>Smoking</div>
+        <div class="leg"><div class="leg-dot" style="background:#e05c1a;"></div>Garbage</div>
+        <div class="leg"><div class="leg-dot" style="background:#1a6fa8;"></div>Water</div>
+        <div class="leg"><div class="leg-dot" style="background:#d4920a;"></div>Noise</div>
+        <div class="leg"><div class="leg-dot" style="background:#cc2929;"></div>Transport</div>
+        <div class="leg"><div class="leg-dot" style="background:#888;"></div>Air</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMUNITY REPORTS -->
+  <div class="reports-section" id="reports-section">
+    <div class="section-header">
+      <div class="section-title">Community Reports</div>
+      <div class="section-sub">All reports sent anonymously by citizens like you</div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="doFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="doFilter('smoking',this)">🚬 Smoking</button>
+      <button class="filter-btn" onclick="doFilter('plastic',this)">🗑️ Garbage</button>
+      <button class="filter-btn" onclick="doFilter('water',this)">💧 Water</button>
+      <button class="filter-btn" onclick="doFilter('noise',this)">🔊 Noise</button>
+      <button class="filter-btn" onclick="doFilter('transport',this)">🚌 Transport</button>
+      <button class="filter-btn" onclick="doFilter('air',this)">🏭 Air</button>
+    </div>
+    <div class="reports-grid" id="reportsGrid"></div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="how-section" id="how-section">
+  <div class="how-title">How CivicAlert Works</div>
+  <div class="how-sub">Simple steps. No account. No confrontation.</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div><div class="step-icon">👀</div>
+      <div class="step-t">You See It</div>
+      <div class="step-d">Notice a civic problem — smoking, garbage, misbehavior — around you.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div><div class="step-icon">📝</div>
+      <div class="step-t">You Report It</div>
+      <div class="step-d">Select the issue, detect your location, describe what you saw. Zero personal info.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div><div class="step-icon">🏛️</div>
+      <div class="step-t">Authorities Act</div>
+      <div class="step-d">Your anonymous report goes to the right government body. They take action.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div><div class="step-icon">✅</div>
+      <div class="step-t">Problem Solved</div>
+      <div class="step-d">Issues get resolved. Community stays clean and safe. You stay out of it.</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Made with 💚 for a cleaner India &nbsp;·&nbsp; <b>CivicAlert</b> &nbsp;·&nbsp; 100% Anonymous · No personal data collected
+</footer>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-icon">✅</div>
+    <div class="modal-title">Report Submitted!</div>
+    <div class="modal-warrior" id="modalWarrior"></div>
+    <div class="modal-txt">Your report has been sent to the authorities. You appeared as your <strong>City Warrior</strong> name — bold and completely anonymous. Thank you for making your community better!</div>
+    <div class="modal-id" id="modalId">CA-000000</div>
+    <div class="modal-id-hint">Save this ID to track your report</div>
+    <button class="btn-modal-close" onclick="closeModal()">Back to Home</button>
+  </div>
+</div>
+
+<script>
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+
+const ISSUE_CFG = {
+  smoking:   { label:'Smoking',          pin:'S', color:'#555555', bg:'#f0f0f0', emoji:'🚬' },
+  plastic:   { label:'Garbage / Plastic',pin:'G', color:'#e05c1a', bg:'#fff0e6', emoji:'🗑️' },
+  water:     { label:'Water Pollution',  pin:'W', color:'#1a6fa8', bg:'#e0f0ff', emoji:'💧' },
+  noise:     { label:'Noise Pollution',  pin:'N', color:'#d4920a', bg:'#fff8e0', emoji:'🔊' },
+  transport: { label:'Misbehavior',      pin:'B', color:'#cc2929', bg:'#ffeaea', emoji:'🚌' },
+  air:       { label:'Air Pollution',    pin:'A', color:'#888888', bg:'#f4f4f4', emoji:'🏭' },
+  other:     { label:'Other Issue',      pin:'!', color:'#1a5c38', bg:'#e6f4ec', emoji:'⚠️' },
+};
+
+const AUTH_LABELS = {
+  municipal:'Municipal Corporation',
+  police:'Local Police Station',
+  transport:'Transport Authority',
+  pollution:'Pollution Control Board',
+  all:'All Authorities',
+};
+
+const AVATAR_COLORS = ['#1a5c38','#1a6fa8','#e05c1a','#cc2929','#7b2d8b','#d4920a'];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+
+let selType     = 'smoking';
+let selSev      = 'low';
+let curFilter   = 'all';
+let userLat     = null;
+let userLng     = null;
+let locDetected = false;
+
+// Load or seed reports
+let reports = (() => {
+  try { return JSON.parse(localStorage.getItem('ca_reports')) || null; } catch { return null; }
+})() || [
+  { id:'CA-001', type:'plastic',   location:'Railway Station, Platform 2',       reporterCity:'Bhubaneswar', warriorName:'Bhubaneswar Warrior', desc:'Large pile of plastic bags and garbage dumped beside the railway tracks. Very unhygienic.',           severity:'high', authority:'municipal',  time:Date.now()-3600000,  lat:20.2994, lng:85.8265, votes:12 },
+  { id:'CA-002', type:'smoking',   location:'City Bus Stop, Main Road',           reporterCity:'Raipur',       warriorName:'Raipur Warrior',       desc:'Group of people smoking at the crowded bus stop. Children and elderly people are present.',        severity:'med',  authority:'police',     time:Date.now()-7200000,  lat:20.2921, lng:85.8305, votes:8  },
+  { id:'CA-003', type:'water',     location:'Mahanadi River Ghat',                reporterCity:'Cuttack',      warriorName:'Cuttack Warrior',      desc:'Industrial waste being discharged directly into the river near the old bridge. Foul smell.',        severity:'high', authority:'pollution',  time:Date.now()-10800000, lat:20.3011, lng:85.8185, votes:21 },
+  { id:'CA-004', type:'noise',     location:'Near Civil Hospital, Gandhi Nagar',  reporterCity:'Gandhi Nagar', warriorName:'Gandhi Nagar Warrior', desc:'Loud DJ music from a wedding venue disturbing patients in the nearby hospital late at night.',     severity:'high', authority:'police',     time:Date.now()-1800000,  lat:20.2901, lng:85.8205, votes:5  },
+  { id:'CA-005', type:'transport', location:'Bus No. 15C, Route Patia–BBSR',      reporterCity:'Patia',        warriorName:'Patia Warrior',        desc:'Conductor was rude, overcharging passengers and refusing to give receipts. Reported to driver.',   severity:'med',  authority:'transport',  time:Date.now()-5400000,  lat:20.2971, lng:85.8305, votes:9  },
+];
+
+// ─── LEAFLET MAP ─────────────────────────────────────────────────────────────
+
+let map = null;
+let youMarker = null;
+let reportMarkers = [];
+
+function initMap() {
+  // Default center: Bhubaneswar
+  map = L.map('leaflet-map', {
+    center: [20.2961, 85.8245],
+    zoom: 13,
+    zoomControl: true,
+  });
+
+  // OpenStreetMap tiles — free, no API key
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  }).addTo(map);
+
+  // Add report markers
+  renderMapMarkers();
+
+  // Auto-detect location
+  autoDetect();
+}
+
+function makeReportIcon(type) {
+  const cfg = ISSUE_CFG[type] || ISSUE_CFG.other;
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      width:28px;height:28px;
+      background:${cfg.color};
+      border:2.5px solid white;
+      border-radius:50% 50% 50% 0;
+      transform:rotate(-45deg);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 3px 8px rgba(0,0,0,0.25);
+    "><span style="transform:rotate(45deg);font-size:0.6rem;font-weight:800;color:white;font-family:sans-serif;">${cfg.pin}</span></div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 28],
+    popupAnchor: [0, -30],
+  });
+}
+
+function makeYouIcon() {
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      width:18px;height:18px;
+      background:#1a5c38;
+      border:3px solid white;
+      border-radius:50%;
+      box-shadow:0 2px 10px rgba(26,92,56,0.5);
+    "></div>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+  });
+}
+
+function renderMapMarkers() {
+  // Remove old markers
+  reportMarkers.forEach(m => m.remove());
+  reportMarkers = [];
+
+  reports.forEach(r => {
+    if (!r.lat || !r.lng) return;
+    const cfg = ISSUE_CFG[r.type] || ISSUE_CFG.other;
+    const m = L.marker([r.lat, r.lng], { icon: makeReportIcon(r.type) })
+      .bindPopup(`
+        <div style="font-family:sans-serif;min-width:180px;">
+          <div style="font-size:0.8rem;font-weight:700;color:${cfg.color};margin-bottom:4px;">${cfg.emoji} ${cfg.label}</div>
+          <div style="font-size:0.76rem;color:#333;margin-bottom:4px;">${r.desc.substring(0,100)}${r.desc.length>100?'…':''}</div>
+          <div style="font-size:0.68rem;color:#888;">📍 ${r.location}</div>
+          <div style="font-size:0.68rem;color:#888;">⚔️ ${r.warriorName}</div>
+        </div>
+      `)
+      .addTo(map);
+    reportMarkers.push(m);
+  });
+}
+
+function updateYouMarker(lat, lng) {
+  if (youMarker) youMarker.remove();
+  youMarker = L.marker([lat, lng], { icon: makeYouIcon(), zIndexOffset: 1000 })
+    .bindPopup('<div style="font-size:0.8rem;font-weight:700;color:#1a5c38;">📍 Your Location</div>')
+    .addTo(map);
+  map.setView([lat, lng], 14);
+}
+
+// ─── LOCATION ────────────────────────────────────────────────────────────────
+
+function autoDetect() {
+  if (!navigator.geolocation) return;
+  setMapStatus('📡 Detecting your location…', true);
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      userLat = pos.coords.latitude;
+      userLng = pos.coords.longitude;
+      locDetected = true;
+      updateYouMarker(userLat, userLng);
+      setMapStatus('✅ Location detected', true);
+      setTimeout(() => setMapStatus('', false), 2800);
+    },
+    () => {
+      // Silently fall back — map still works with default view
+      setMapStatus('', false);
+    },
+    { timeout: 9000, maximumAge: 60000 }
+  );
+}
+
+function setMapStatus(msg, show) {
+  const el = document.getElementById('mapStatus');
+  el.textContent = msg;
+  el.classList.toggle('show', show);
+}
+
+function getGPS() {
+  if (!navigator.geolocation) {
+    setFeedback('⚠️ Your browser does not support geolocation. Please type location manually.', 'err');
+    return;
+  }
+  const btn = document.getElementById('gpsBtn');
+  btn.textContent = '⏳ Locating…';
+  btn.disabled = true;
+  setFeedback('⏳ Detecting your location…', '');
+  setMapStatus('📡 Getting GPS…', true);
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      userLat = pos.coords.latitude;
+      userLng = pos.coords.longitude;
+      locDetected = true;
+      updateYouMarker(userLat, userLng);
+      setMapStatus('✅ Located', true);
+      setTimeout(() => setMapStatus('', false), 2500);
+      btn.textContent = '✅ Located';
+      btn.disabled = false;
+      setTimeout(() => btn.textContent = '📡 Detect', 3000);
+
+      // Reverse geocode with Nominatim — free, no key needed
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLng}&format=json`, {
+        headers: { 'Accept-Language': 'en' }
+      })
+      .then(r => r.json())
+      .then(data => {
+        const a = data.address || {};
+        const parts = [
+          a.road || a.pedestrian || a.suburb,
+          a.city_district || a.neighbourhood,
+          a.city || a.town || a.village || a.county,
+          a.state
+        ].filter(Boolean);
+        const loc = parts.slice(0, 3).join(', ');
+        document.getElementById('locInput').value = loc;
+        setFeedback('✅ ' + loc, 'ok');
+        toast('📍 Location detected: ' + (parts[0] || loc));
+      })
+      .catch(() => {
+        const loc = `My Location (${userLat.toFixed(5)}, ${userLng.toFixed(5)})`;
+        document.getElementById('locInput').value = loc;
+        setFeedback('✅ GPS coordinates detected', 'ok');
+        toast('📍 Location detected');
+      });
+    },
+    err => {
+      btn.textContent = '📡 Detect';
+      btn.disabled = false;
+      setMapStatus('', false);
+      const msgs = {
+        1: '⚠️ Location access denied. Please allow location in your browser settings.',
+        2: '⚠️ Location unavailable. Please type it manually.',
+        3: '⚠️ Location timed out. Try again or type manually.',
+      };
+      setFeedback(msgs[err.code] || '⚠️ Could not detect location.', 'err');
+    },
+    { timeout: 12000, maximumAge: 30000, enableHighAccuracy: true }
+  );
+}
+
+function setFeedback(msg, type) {
+  const el = document.getElementById('locFeedback');
+  el.textContent = msg;
+  el.className = 'loc-feedback' + (type ? ' ' + type : '');
+}
+
+// ─── FORM ─────────────────────────────────────────────────────────────────────
+
+function pickIssue(el, type) {
+  document.querySelectorAll('.issue-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  selType = type;
+}
+
+function setSev(s) {
+  selSev = s;
+  ['low','med','high'].forEach(v => document.getElementById('sev-'+v).classList.remove('active'));
+  document.getElementById('sev-'+s).classList.add('active');
+}
+
+function submitReport() {
+  const loc  = document.getElementById('locInput').value.trim();
+  const desc = document.getElementById('descInput').value.trim();
+  const auth = document.getElementById('authSelect').value;
+
+  if (!loc)  { toast('⚠️ Please enter your location', '#c0392b'); return; }
+  if (!desc) { toast('⚠️ Please describe the issue',  '#c0392b'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = '⏳ Submitting…';
+
+  setTimeout(() => {
+    const id   = 'CA-' + (Math.floor(Math.random()*900000)+100000);
+    const lat  = (userLat || 20.2961) + (Math.random()-0.5)*0.014;
+    const lng  = (userLng || 85.8245) + (Math.random()-0.5)*0.014;
+    const parts = loc.split(',');
+    const city  = (parts[parts.length-1]||parts[0]).trim();
+    const warrior = city + ' Warrior';
+
+    const rep = {
+      id, type:selType, location:loc, reporterCity:city, warriorName:warrior,
+      desc, severity:selSev, authority:auth,
+      time:Date.now(), lat, lng, votes:0
+    };
+
+    reports.unshift(rep);
+    try { localStorage.setItem('ca_reports', JSON.stringify(reports)); } catch {}
+
+    // Add marker to real map
+    const m = L.marker([lat, lng], { icon: makeReportIcon(selType) })
+      .bindPopup(`<div style="font-family:sans-serif;">
+        <b style="color:${ISSUE_CFG[selType].color}">${ISSUE_CFG[selType].emoji} ${ISSUE_CFG[selType].label}</b><br>
+        <span style="font-size:0.76rem">${desc.substring(0,80)}…</span>
+      </div>`)
+      .addTo(map);
+    reportMarkers.push(m);
+
+    renderReports();
+    updateStats();
+
+    document.getElementById('modalId').textContent = id;
+    document.getElementById('modalWarrior').textContent = '⚔️ ' + warrior;
+    document.getElementById('modalBg').classList.add('open');
+
+    btn.disabled = false; btn.textContent = '🚨 Submit Anonymous Report';
+    document.getElementById('locInput').value = '';
+    document.getElementById('descInput').value = '';
+    setFeedback('', '');
+  }, 1100);
+}
+
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('open');
+}
+
+// ─── REPORTS ─────────────────────────────────────────────────────────────────
+
+function doFilter(type, btn) {
+  curFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderReports();
+}
+
+function renderReports() {
+  const grid = document.getElementById('reportsGrid');
+  const list = curFilter === 'all' ? reports : reports.filter(r => r.type === curFilter);
+
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty-msg"><span>🌿</span>No reports in this category yet. Be the first!</div>';
+    return;
+  }
+
+  grid.innerHTML = list.map(r => {
+    const cfg     = ISSUE_CFG[r.type] || ISSUE_CFG.other;
+    const sLbl    = { low:'🟡 Low', med:'🟠 Medium', high:'🔴 High' }[r.severity] || '🟡 Low';
+    const sCls    = { low:'rsev-low', med:'rsev-med', high:'rsev-high' }[r.severity] || 'rsev-low';
+    const warrior = r.warriorName || ((r.reporterCity||'Community')+' Warrior');
+    const city    = r.reporterCity || 'Unknown';
+    const aColor  = AVATAR_COLORS[warrior.charCodeAt(0) % AVATAR_COLORS.length];
+    const init    = warrior.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const authLbl = AUTH_LABELS[r.authority] || r.authority;
+
+    return `<div class="rcard ${r.type}">
+      <div class="rcard-head">
+        <div class="rtype-badge" style="background:${cfg.bg};color:${cfg.color}">${cfg.emoji} ${cfg.label}</div>
+        <div class="rsev ${sCls}">${sLbl}</div>
+      </div>
+      <div class="rwarrior">
+        <div class="ravatar" style="background:${aColor}">${init}</div>
+        <div>
+          <div class="rwarr-name">⚔️ ${warrior}</div>
+          <div class="rwarr-meta">📍 from <strong style="color:var(--green)">${city}</strong> · ${ago(r.time)}</div>
+        </div>
+      </div>
+      <div class="rdesc">${r.desc}</div>
+      <div class="rfoot">
+        <div>
+          <div class="rloc">📍 ${r.location}</div>
+          <div class="rauth">🏛 ${authLbl}</div>
+        </div>
+        <button class="vote-btn" onclick="vote('${r.id}',this)">👍 ${r.votes}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function vote(id, btn) {
+  const r = reports.find(x => x.id === id); if (!r) return;
+  if (btn.classList.contains('voted')) { r.votes--; btn.classList.remove('voted'); }
+  else { r.votes++; btn.classList.add('voted'); }
+  btn.innerHTML = `👍 ${r.votes}`;
+  try { localStorage.setItem('ca_reports', JSON.stringify(reports)); } catch {}
+}
+
+function updateStats() {
+  const today = reports.filter(r => new Date(r.time).toDateString() === new Date().toDateString()).length;
+  document.getElementById('heroTotal').textContent = today;
+  document.getElementById('heroResolved').textContent = Math.floor(today * 0.6);
+}
+
+function ago(ts) {
+  const m = Math.floor((Date.now()-ts)/60000);
+  if (m < 1) return 'Just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m/60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h/24)}d ago`;
+}
+
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function toast(msg, bg='#1a5c38') {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg; t.style.background = bg;
+  document.body.appendChild(t);
+  setTimeout(() => {
+    t.style.opacity = '0'; t.style.transition = 'opacity 0.3s';
+    setTimeout(() => t.remove(), 300);
+  }, 3200);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+window.addEventListener('load', () => {
+  initMap();
+  renderReports();
+  updateStats();
+});
+</script>
+</body>
+</html>
